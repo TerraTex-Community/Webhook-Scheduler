@@ -22,17 +22,17 @@ spec:
 #                  number: 80
 #            path: /
 #            pathType: Prefix
-    - host: scheduler.terratex.eu
+    - host: scheduler.kube.terratex.eu
       http:
         paths:
           - backend:
               service:
-                name: tt-scheduler-backend-service
+                name: tt-scheduler-service
                 port:
-                  number: 4510
+                  number: 5000
             path: /
             pathType: Prefix
   tls:
     - hosts:
-        - scheduler.terratex.eu
+        - scheduler.kube.terratex.eu
       secretName: letsencrypt-tt-scheduler-cert-secret
