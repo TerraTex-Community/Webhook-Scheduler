@@ -1,7 +1,7 @@
 {
-  "name": "jtt-scheduler",
+  "name": "tt-scheduler",
   "version": "1.0.0",
-  "description": "SignUp and Management Bot for VenusLounge",
+  "description": "scheduler",
   "main": "index.js",
   "scripts": {
     "start": "npx ts-node src/app",

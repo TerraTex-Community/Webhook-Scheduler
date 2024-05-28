@@ -1,12 +1,15 @@
+import {ApplicationStates, setApplicationState} from "./services/ApplicationStateService";
+import {initExpress} from "./api/express";
 
 
 async function startApplication() {
 
     // await initAppDataSource();
 
-    // initExpress(); // set express to port 5000
+    initExpress(); // set express to port 5000
 
-   // setApplicationState(ApplicationStates.StartupComplete, true);
+
+    setApplicationState(ApplicationStates.StartupComplete, true);
 
 }
 
