@@ -16,8 +16,8 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  namespace: venus-lounge-management
-  name: venus-guard-backend
+  namespace: tt-scheduler-management
+  name: tt-scheduler-backend
 spec:
   selector:
     matchLabels:
