@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: tt-scheduler
+  name: tt-scheduler-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: lets-encrypt
+    kubernetes.io/ingress.class: public
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: public
+  rules:
+#    - host: dashboard.venus-lounge.club
+#      http:
+#        paths:
+#          - backend:
+#              service:
+#                name: vlm-frontend-service
+#                port:
+#                  number: 80
+#            path: /
+#            pathType: Prefix
+    - host: scheduler.terratex.eu
+      http:
+        paths:
+          - backend:
+              service:
+                name: tt-scheduler-backend-service
+                port:
+                  number: 4510
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - scheduler.terratex.eu
+      secretName: letsencrypt-tt-scheduler-cert-secret

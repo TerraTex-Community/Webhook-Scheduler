@@ -1,0 +1,52 @@
+{
+  "name": "jtt-scheduler",
+  "version": "1.0.0",
+  "description": "SignUp and Management Bot for VenusLounge",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx ts-node src/app",
+    "serve": "npx ts-node-dev src/app",
+    "typeorm": "npx typeorm-ts-node-commonjs",
+    "migration:npm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -p true -d ./local_dev_datasource.ts src/db/migration/migration_%npm_config_name%",
+    "migration:generate": "npx typeorm-ts-node-commonjs migration:generate -p true -d ./local_dev_datasource.ts src/db/migration/migration_$0",
+    "migration:revert": "npx typeorm-ts-node-commonjs migration:revert -d ./local_dev_datasource.ts",
+    "lint": "eslint --no-warn-ignored src/**/*.ts",
+    "lint:report": "eslint --no-warn-ignored -o eslint_report.json -f json src/**/*.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MrsJessica92/BotVenusLounge.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/express-requests-logger": "^3.0.4",
+    "@types/express-session": "^1.18.0",
+    "@types/node": "^20.12.2",
+    "@types/uuid": "^9.0.8",
+    "axios": "^1.6.8",
+    "axios-cookiejar-support": "^5.0.0",
+    "connect-typeorm": "^2.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-requests-logger": "^4.0.0",
+    "express-session": "^1.18.0",
+    "mysql": "^2.18.1",
+    "reflect-metadata": "^0.2.2",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "typeorm": "0.3.20",
+    "typescript": "^5.4.3",
+    "uuid": "^9.0.1",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "typescript-eslint": "^7.4.0"
+  },
+  "packageManager": "yarn@4.0.2"
+}

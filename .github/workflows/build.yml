@@ -1,0 +1,98 @@
+name: Deployment
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+  push:
+    branches: [ "main" ]
+    # Publish semver tags as releases.
+    tags: [ 'v*.*.*' ]
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
+
+
+jobs:
+  backend:
+    defaults:
+      run:
+        working-directory: src
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Yarn
+        uses: actions/setup-node@v3.7.0
+        with:
+          node-version: 20.9.0
+
+      - name: write env file
+        working-directory: src
+        run: |
+          echo "${{ secrets.dot_env }}" >> .env
+
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: keydb
+        name: Get Latest Release
+        uses: pozetroninc/github-action-get-latest-release@v0.7.0
+        with:
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,pattern={{raw}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=semver,pattern={{raw}},value=${{steps.keydb.outputs.release}},enable=${{ !startsWith(github.ref, 'refs/tags/v') }}
+            type=ref,event=branch
+            type=raw,value=${{github.run_number}}.${{github.run_attempt}}
+            type=raw,value=${{github.run_id}}
+      - # Setting up Docker Buildx with docker-container driver is required
+        # at the moment to be able to use a subdirectory with Git context
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Set up Kubectl
+        uses: azure/k8s-set-context@v1
+        with:
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - uses: swdotcom/update-and-apply-kubernetes-configs@v1
+        with:
+          namespace: tt-scheduler
+          k8-config-file-paths: |
+            kubernetes/backend.yaml
+          replacement-method: defined
+        env:
+          IMAGE_TAG: ${{ github.run_id }}
