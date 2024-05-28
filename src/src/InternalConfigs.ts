@@ -21,6 +21,5 @@ export const EnvConfig = {
 export const InternalConfig = {
     // logFile:  EnvConfig.isLocal ? "logs/bot_venus_lounge.log" : "../logs/bot_venus_lounge.log",
     logFile:  "logs/scheduler.log",
-    // @todo: change by service name
-    appUrl: EnvConfig.isLocal ? "http://localhost:4500/" : "https://api.venus-lounge.club/",
+    // appUrl: EnvConfig.isLocal ? "http://localhost:5000/" : "https:///",
 }
