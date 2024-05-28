@@ -1,6 +1,4 @@
-!/src/.env
-!/src/.env.prod
-!/src/node_modules/
+
 
 # Logs
 logs
