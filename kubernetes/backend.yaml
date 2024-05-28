@@ -38,7 +38,7 @@ spec:
           emptyDir: {}
       containers:
         - name: tt-scheduler-backend
-          image: ghcr.io/terratex-community/tt-scheduler-backend:${IMAGE_TAG}
+          image: ghcr.io/terratex-community/webhook-scheduler-backend:${IMAGE_TAG}
           imagePullPolicy: IfNotPresent
           env:
             - name: run_on_kubernetes
