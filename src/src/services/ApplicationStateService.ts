@@ -3,7 +3,6 @@ export enum ApplicationStates {
     DatabaseReady = "databaseReady",
 }
 
-
 const applicationState = {
     startupComplete: false,
     databaseReady: false,
@@ -12,7 +11,6 @@ const applicationState = {
 export function getCurrentApplicationState() {
     return applicationState;
 }
-
 
 export function setApplicationState(state: ApplicationStates, value: boolean) {
     applicationState[state] = value;

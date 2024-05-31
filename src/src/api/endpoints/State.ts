@@ -2,8 +2,7 @@ import express from "express";
 import {getCurrentApplicationState} from "../../services/ApplicationStateService";
 import {getInstanceId} from "../../utils/Kubernetes";
 
-
-export const StateRouter = express.Router();
+const StateRouter = express.Router();
 
 StateRouter.get("/health", (req, res) => {
     const states = getCurrentApplicationState();
@@ -25,3 +24,5 @@ StateRouter.get("/instance", (req, res) => {
         podName: process.env.pod_name ?? null
     })
 });
+
+export default StateRouter;

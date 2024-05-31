@@ -34,6 +34,7 @@
     "express": "^4.19.2",
     "express-requests-logger": "^4.0.0",
     "express-session": "^1.18.0",
+    "jsonwebtoken": "^9.0.2",
     "mysql": "^2.18.1",
     "reflect-metadata": "^0.2.2",
     "ts-node": "^10.9.2",
@@ -45,6 +46,7 @@
     "winston": "^3.13.0"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9",
     "eslint": "^8.57.0",
     "typescript-eslint": "^7.4.0"
   },

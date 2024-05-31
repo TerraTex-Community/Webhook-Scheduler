@@ -4,12 +4,15 @@ import {Job} from "./Job";
 
 @Entity()
 export class Application extends CreateUpdateBaseEntity {
+
+    /**
+     * Represents the identifier of an entity.
+     */
     @PrimaryGeneratedColumn()
     id: number;
 
     /**
      * System Privilege allows Application to manage the system via REST
-     * @todo: implement REST to Manage Applications
      */
     @Column({
         type: "boolean",

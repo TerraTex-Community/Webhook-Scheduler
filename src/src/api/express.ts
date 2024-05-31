@@ -4,7 +4,7 @@ import express, {Request, Response} from "express";
 // import {AppDataSource} from "../data-source";
 import {logger} from "../logger";
 import audit from "express-requests-logger";
-import {StateRouter} from "./endpoints/State";
+import GeneralRouter from "./GeneralRouter";
 
 
 export function initExpress() {
@@ -58,7 +58,7 @@ export function initExpress() {
         }
     }));
 
-    app.use("/state", StateRouter);
+    app.use(GeneralRouter);
 
     // app.use(session({
     //     secret: "venus_lounge",
