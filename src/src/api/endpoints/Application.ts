@@ -62,12 +62,12 @@ router.post('/', async (req: Request<undefined, Application | ErrorResponse, Pos
     const { name, webhookUrl, stationName, hasSystemPrivilege } = req.body;
 
     // Validate request body
-    if (webhookUrl === undefined && stationName === undefined) {
-        res.status(400).send({ message: 'Either webhookUrl or stationName must be provided' });
+    if (!webhookUrl && !stationName) {
+        res.status(400).send({ message: 'Either [webhookUrl] or [stationName] must be provided' });
         return;
     }
 
-    if (name === undefined) {
+    if (!name) {
         return res.status(400).send({ message: 'Field [name] missing: Please add a Description / Name'});
     }
 

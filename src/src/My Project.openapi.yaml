@@ -1,0 +1,617 @@
+openapi: 3.1.0
+info:
+  title: My Project
+  description: ''
+  version: 1.0.0
+tags:
+  - name: Application
+paths:
+  /state/health:
+    get:
+      summary: GET state/health
+      deprecated: false
+      description: ''
+      tags: []
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  startupComplete:
+                    type: boolean
+                  databaseReady:
+                    type: boolean
+                required:
+                  - startupComplete
+                  - databaseReady
+      security: []
+  /state/instance:
+    get:
+      summary: GET state/instance
+      deprecated: false
+      description: ''
+      tags: []
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hostname:
+                    type:
+                      - string
+                      - 'null'
+                  instanceId:
+                    type:
+                      - integer
+                      - 'null'
+                  nodeVersion:
+                    type:
+                      - string
+                      - 'null'
+                  runOnKubernetes:
+                    type:
+                      - string
+                      - 'null'
+                  podName:
+                    type:
+                      - string
+                      - 'null'
+              examples:
+                '1':
+                  summary: Success
+                  value:
+                    hostname: tt-scheduler-backend-0
+                    instanceId: 0
+                    nodeVersion: 20.9.0
+                    runOnKubernetes: 'true'
+                    podName: tt-scheduler-backend-0
+      security: []
+  /application:
+    post:
+      summary: create application
+      deprecated: false
+      description: ''
+      tags:
+        - Application
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                webhookUrl:
+                  type:
+                    - string
+                    - 'null'
+                name:
+                  type: string
+                stationName:
+                  type:
+                    - string
+                    - 'null'
+                hasSystemPrivilege:
+                  type: boolean
+              required:
+                - name
+                - hasSystemPrivilege
+              minProperties: 3
+            example:
+              webhookUrl: https://untidy-logo.net
+              name: nesciunt ex impedit
+              stationName: eos laborum ipsum
+              hasSystemPrivilege: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  hasSystemPrivilege:
+                    type: boolean
+                  authKey:
+                    type: string
+                  authSecret:
+                    type: string
+                  applicationSecurityToken:
+                    type: string
+                  webhookUrl:
+                    type:
+                      - string
+                      - 'null'
+                  stationName:
+                    type:
+                      - string
+                      - 'null'
+                  updatedAt:
+                    type: string
+                  createdAt:
+                    type: string
+                  id:
+                    type: integer
+                required:
+                  - name
+                  - hasSystemPrivilege
+                  - authKey
+                  - authSecret
+                  - applicationSecurityToken
+                  - updatedAt
+                  - createdAt
+                  - id
+              examples:
+                '1':
+                  summary: Success
+                  value:
+                    name: nesciunt ex impedit
+                    hasSystemPrivilege: false
+                    authKey: 9603cce2-16d0-4002-bb14-6c370bbda456
+                    authSecret: 226640b52c99831209517af37602b2ef82bb898c
+                    applicationSecurityToken: 143929cb11958770775dfc21b3430134c38810f2
+                    webhookUrl: https://untidy-logo.net
+                    stationName: eos laborum ipsum
+                    updatedAt: '2024-05-31T15:32:36.865Z'
+                    createdAt: '2024-05-31T15:32:36.865Z'
+                    id: 2
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+              examples:
+                '1':
+                  summary: Exception
+                  value:
+                    message: Either webhookUrl or stationName must be provided
+      security:
+        - bearer: []
+    get:
+      summary: get all applications
+      deprecated: false
+      description: ''
+      tags:
+        - Application
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    updatedAt:
+                      type: string
+                    createdAt:
+                      type: string
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    hasSystemPrivilege:
+                      type: boolean
+                    authKey:
+                      type: string
+                    authSecret:
+                      type: string
+                    applicationSecurityToken:
+                      type: string
+                    webhookUrl:
+                      type:
+                        - string
+                        - 'null'
+                    stationName:
+                      type:
+                        - string
+                        - 'null'
+              examples:
+                '1':
+                  summary: Success
+                  value:
+                    - updatedAt: '2024-05-31T12:39:18.222Z'
+                      createdAt: '2024-05-31T12:39:18.222Z'
+                      id: 1
+                      name: root-access
+                      hasSystemPrivilege: true
+                      authKey: ...
+                      authSecret: ...
+                      applicationSecurityToken: ...
+                      webhookUrl: null
+                      stationName: null
+      security:
+        - bearer: []
+  /application/{id}:
+    get:
+      summary: get application by {id}
+      deprecated: false
+      description: ''
+      tags:
+        - Application
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          example: ''
+          schema:
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updatedAt:
+                    type: string
+                  createdAt:
+                    type: string
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  hasSystemPrivilege:
+                    type: boolean
+                  authKey:
+                    type: string
+                  authSecret:
+                    type: string
+                  applicationSecurityToken:
+                    type: string
+                  webhookUrl:
+                    type: string
+                  stationName:
+                    type: string
+                required:
+                  - updatedAt
+                  - createdAt
+                  - id
+                  - name
+                  - hasSystemPrivilege
+                  - authKey
+                  - authSecret
+                  - applicationSecurityToken
+                  - webhookUrl
+                  - stationName
+              examples:
+                '1':
+                  summary: Success
+                  value:
+                    updatedAt: '2024-05-31T12:39:18.222Z'
+                    createdAt: '2024-05-31T12:39:18.222Z'
+                    id: 1
+                    name: root-access
+                    hasSystemPrivilege: true
+                    authKey: ...
+                    authSecret: ...
+                    applicationSecurityToken: ...
+                    webhookUrl: null
+                    stationName: null
+        '404':
+          description: Record Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+              examples:
+                '1':
+                  summary: Exception
+                  value:
+                    message: Application not found
+      security:
+        - bearer: []
+    put:
+      summary: update application
+      deprecated: false
+      description: ''
+      tags:
+        - Application
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                stationName:
+                  type: string
+                hasSystemPrivilege:
+                  type: boolean
+                webhookUrl:
+                  type: string
+                  format: uri
+              minProperties: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updatedAt:
+                    type: string
+                  createdAt:
+                    type: string
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  hasSystemPrivilege:
+                    type: boolean
+                  authKey:
+                    type: string
+                  authSecret:
+                    type: string
+                  applicationSecurityToken:
+                    type: string
+                  webhookUrl:
+                    type:
+                      - string
+                      - 'null'
+                  stationName:
+                    type:
+                      - string
+                      - 'null'
+                required:
+                  - updatedAt
+                  - createdAt
+                  - id
+                  - name
+                  - hasSystemPrivilege
+                  - authKey
+                  - authSecret
+                  - applicationSecurityToken
+              examples:
+                '1':
+                  summary: Success
+                  value:
+                    updatedAt: '2024-05-31T15:27:04.000Z'
+                    createdAt: '2024-05-31T12:39:18.222Z'
+                    id: 1
+                    name: root-access
+                    hasSystemPrivilege: true
+                    authKey: ...
+                    authSecret: ...
+                    applicationSecurityToken: ...
+                    webhookUrl: null
+                    stationName: null
+        '404':
+          description: Record Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+              examples:
+                '1':
+                  summary: Exception
+                  value:
+                    message: Application not found
+      security:
+        - bearer: []
+    delete:
+      summary: delete application
+      deprecated: false
+      description: ''
+      tags:
+        - Application
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          example: ''
+          schema:
+            type: number
+      responses:
+        '204':
+          description: No Content
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties: {}
+        '404':
+          description: Record Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+      security:
+        - bearer: []
+  /job:
+    post:
+      summary: POST job
+      deprecated: false
+      description: ''
+      tags: []
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+      security: []
+  /job/{id}:
+    get:
+      summary: GET job/{id}
+      deprecated: false
+      description: ''
+      tags: []
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          example: ''
+          schema:
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+      security: []
+    put:
+      summary: PUT job/{id}
+      deprecated: false
+      description: ''
+      tags: []
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          example: ''
+          schema:
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+      security: []
+    delete:
+      summary: DELETE job/{id}
+      deprecated: false
+      description: ''
+      tags: []
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          example: ''
+          schema:
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+      security: []
+  /auth:
+    get:
+      summary: GET auth
+      deprecated: false
+      description: ''
+      tags: []
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  applicationId:
+                    type: integer
+                required:
+                  - valid
+                  - applicationId
+              examples:
+                '1':
+                  summary: Success
+                  value:
+                    valid: true
+                    applicationId: 1
+      security:
+        - bearer: []
+    post:
+      summary: POST auth
+      deprecated: false
+      description: ''
+      tags: []
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                required:
+                  - token
+              examples:
+                '1':
+                  summary: Success
+                  value:
+                    token: >-
+                      eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBsaWNhdGlvbklkIjoxLCJpYXQiOjE3MTcxNjcyNjgsImV4cCI6MTcxNzc3MjA2OH0.7VZHSgdZGrDV7tWoG00N6NIpkYnaY52iICRj37_g1Es
+      security:
+        - basic: []
+components:
+  schemas: {}
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+    basic:
+      type: http
+      scheme: basic
+servers:
+  - url: https://scheduler.kube.terratex.eu
+    description: Prod Env
+  - url: http://localhost:5000
+    description: Local Env
