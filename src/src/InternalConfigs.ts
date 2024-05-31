@@ -19,7 +19,7 @@ export const EnvConfig = {
 }
 
 export const InternalConfig = {
-    // logFile:  EnvConfig.isLocal ? "logs/bot_venus_lounge.log" : "../logs/bot_venus_lounge.log",
+    certName:  process.env.CERT_NAME || EnvConfig.isLocal ? "local" : "prod",
     logFile:  "logs/scheduler.log",
     // appUrl: EnvConfig.isLocal ? "http://localhost:5000/" : "https:///",
 }

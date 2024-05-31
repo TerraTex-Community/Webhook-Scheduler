@@ -1,6 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import { Application } from 'src/db/entities/Application';
+import { Application } from '../db/entities/Application';
+import fs from "fs";
+import {InternalConfig} from "../InternalConfigs";
+import crypto from 'crypto';
+import {logger} from "../logger";
 
 /**
  * Retrieve the Application ID from a JWT
@@ -98,8 +102,8 @@ export const tokenOr403 = async (req: Request, res: Response): Promise<any> => {
 
     try {
         const token = authHeader.split(' ')[1]; // Bearer token
-        // @todo: replace key by smth better
-        return await new Promise((resolve, reject) => jwt.verify(token, 'your-secret-key', (err, data) => err ? reject(err) : resolve(data)));
+        const cert = fs.readFileSync(`certs/${InternalConfig.certName}.pem`);
+        return await new Promise((resolve, reject) => jwt.verify(token, cert, (err, data) => err ? reject(err) : resolve(data)));
     } catch (err) {
         res.sendStatus(403);
         throw err;
@@ -118,7 +122,8 @@ export async function sameApplicationIdSystemPrivilegeOr403(appId: number, req: 
 
 export const verifyJWTToken = (token: string): Promise<any> => {
     return new Promise((resolve, reject) => {
-        jwt.verify(token, "your-secret-key" , (err: any, data: any) => {
+        const cert = fs.readFileSync(`certs/${InternalConfig.certName}.pem`);
+        jwt.verify(token, cert, (err: any, data: any) => {
             if(err) {
                 reject(err);
             }
@@ -128,3 +133,32 @@ export const verifyJWTToken = (token: string): Promise<any> => {
         });
     });
 };
+
+export function generateJwt(applicationId: number) {
+    const cert = fs.readFileSync(`certs/${InternalConfig.certName}.pem`);
+    return jwt.sign({ applicationId }, cert, { expiresIn: '7d' });
+}
+
+export async function checkAndGenerateRootAuthentication() {
+    const rootAuthKey = crypto.randomBytes(16).toString('hex');
+    const rootAuthSecret = crypto.randomBytes(32).toString('hex');
+    const applicationSecurityToken = crypto.randomBytes(32).toString('hex');
+
+    let application = await Application.findOne({ where: { hasSystemPrivilege: true } });
+
+    if (!application) {
+        // If there is no application with systemprivilege, create one
+        application = new Application();
+        application.name = "root-access";
+        application.authKey = rootAuthKey;
+        application.authSecret = rootAuthSecret;
+        application.applicationSecurityToken = applicationSecurityToken;
+        application.hasSystemPrivilege = true;
+        await application.save();
+
+        logger.info("Root Authentication missing - create new credentials", {
+            rootAuthKey,
+            rootAuthSecret
+        });
+    }
+}

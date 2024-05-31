@@ -11,6 +11,17 @@ export class Application extends CreateUpdateBaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
+
+    /**
+     * Represents the name of Application or an description to Identify Applications in Database.
+     *
+     * @typedef {string} Name
+     */
+    @Column({
+        type: "text"
+    })
+    name: string;
+
     /**
      * System Privilege allows Application to manage the system via REST
      */

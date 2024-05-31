@@ -1,6 +1,7 @@
 import {ApplicationStates, setApplicationState} from "./services/ApplicationStateService";
 import {initExpress} from "./api/express";
 import {initAppDataSource} from "./data-source";
+import {checkAndGenerateRootAuthentication} from "./services/Authentication";
 
 
 async function startApplication() {
@@ -9,6 +10,7 @@ async function startApplication() {
 
     initExpress();
 
+    await checkAndGenerateRootAuthentication();
     setApplicationState(ApplicationStates.StartupComplete, true);
 }
 

@@ -1,0 +1,148 @@
+openapi: "3.1.0"
+info:
+  title: "Webhook_Scheduler API"
+  description: "Webhook_Scheduler API"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:5000"
+components:
+  securitySchemes:
+    BearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: Basic Authentication with application authKey as username and authSecret as password
+paths:
+  /state/health:
+    get:
+      summary: "GET state/health"
+      responses:
+        "200":
+          description: "OK"
+  /state/instance:
+    get:
+      summary: "GET state/instance"
+      responses:
+        "200":
+          description: "OK"
+  /application:
+    post:
+      summary: "POST application"
+      security:
+        - BearerAuth: [ ]
+      responses:
+        "200":
+          description: "OK"
+  /application/{id}:
+    get:
+      summary: "GET application/{id}"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "id"
+          in: "path"
+          schema:
+            type: number
+          required: true
+      responses:
+        "200":
+          description: "OK"
+    put:
+      summary: "PUT application/{id}"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "id"
+          schema:
+            type: number
+          in: "path"
+          required: true
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "DELETE application/{id}"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "id"
+          schema:
+            type: number
+          in: "path"
+          required: true
+      responses:
+        "200":
+          description: "OK"
+  /job:
+    post:
+      summary: "POST job"
+      security:
+        - BearerAuth: [ ]
+      responses:
+        "200":
+          description: "OK"
+  /job/{id}:
+    get:
+      summary: "GET job/{id}"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "id"
+          in: "path"
+          schema:
+            type: number
+          required: true
+      responses:
+        "200":
+          description: "OK"
+    put:
+      summary: "PUT job/{id}"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "id"
+          in: "path"
+          schema:
+            type: number
+          required: true
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "DELETE job/{id}"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "id"
+          in: "path"
+          schema:
+            type: number
+          required: true
+      responses:
+        "200":
+          description: "OK"
+  /auth:
+    get:
+      summary: "GET auth"
+      security:
+        - BearerAuth: [ ]
+      responses:
+        "200":
+          description: "OK"
+    post:
+      summary: "POST auth"
+      security:
+        - BasicAuth: [ ]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bearerToken:
+                    type: string
