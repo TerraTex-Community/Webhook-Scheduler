@@ -11,6 +11,7 @@ import {
 import {isUUID} from "validator";
 import {CronExpression, parseExpression} from "cron-parser";
 import {ErrorResponse} from "../utils/DefaultResponses";
+import {maskSensitiveInfo} from "../../db/utils/maskSensitiveData";
 
 // Interfaces used for strict typing of request bodies and parameters
 interface PostPutRequestBody {
@@ -48,7 +49,7 @@ router.use(mwIsJwtValid);
  * @returns {Promise<Job | undefined>} - Returns the job if found or undefined
  */
 async function getJobOr404(id: number, res: Response<Job | ErrorResponse>): Promise<Job | undefined> {
-    const job = await Job.findOne({where: {id}});
+    const job = await Job.findOne({where: {id}, relations: ["application"]});
     if (!job) {
         res.status(404).send({message: 'Job not found'});
         return;
@@ -64,7 +65,7 @@ router.get('/:id', async (req: Request<GetQuery, Job | ErrorResponse>, res: Resp
             return;
         }
 
-        res.send(job);
+        return res.send(maskSensitiveInfo(job));
     }
 });
 
@@ -86,11 +87,12 @@ router.post('/', async (req: Request<undefined, Job | ErrorResponse, PostPutRequ
         maxRetries: verifiedBody.maxRetries,
         payload: verifiedBody.payload,
         jobExecutionType: verifiedBody.jobExecutionType as JobExecutionType | undefined,
-        calculatedNextRun: verifiedBody.calculatedNextRun
+        calculatedNextRun: verifiedBody.calculatedNextRun,
+        application: application!
     });
 
-    await job.save();
-    return res.send(job);
+    const savedJob = await job.save();
+    return res.send(maskSensitiveInfo(savedJob));
 });
 
 
@@ -111,8 +113,8 @@ router.put('/:id', async (req: Request<GetQuery, Job | ErrorResponse, PostPutReq
     }
 
     Object.assign(job, verifiedBody);
-    await job.save();
-    res.send(job);
+    const savedJob = await job.save();
+    return res.send(maskSensitiveInfo(savedJob));
 });
 
 // Delete job endpoint
@@ -153,7 +155,7 @@ function verifyBody(body: PostPutRequestBody, isUpdate = false): Partial<PostPut
         try {
             parsedExpression = parseExpression(body.cronExpression, {
                 tz: "Europe/Berlin",
-                currentDate: new Date()
+                // currentDate: new Date()
             });
         } catch (e) {
             throw new ValidationError('cronExpression is not a valid or supported cron expression');
@@ -163,14 +165,15 @@ function verifyBody(body: PostPutRequestBody, isUpdate = false): Partial<PostPut
             throw new ValidationError('cronExpression is not valid as it is its execution is in past');
         }
 
-        const next = parsedExpression.next().getDate();
-        const nextNext = parsedExpression.next().getDate();
-        if (nextNext - next < 180000) {
+        const next = parsedExpression.next();
+        const nextNext = parsedExpression.next();
+
+        if (nextNext.getTime() - next.getTime() < 180000) {
             throw new ValidationError("cronExpress is not valid: Intervals/Repeating Cron Expressions should have longer Intervals than 3 Minutes");
         }
 
         verifiedBody.cronExpression = body.cronExpression;
-        verifiedBody.calculatedNextRun = next;
+        verifiedBody.calculatedNextRun = next.getTime();
     }
 
     if (body.maxRetries !== undefined) {

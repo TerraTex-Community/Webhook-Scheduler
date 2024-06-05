@@ -38,7 +38,7 @@ export class Job extends CreateUpdateBaseEntity {
 
     @Column({
         type: "json",
-        default: {}
+        default: "{}"
     })
     payload: any;
 
@@ -60,7 +60,7 @@ export class Job extends CreateUpdateBaseEntity {
     lastRetries: number = 0;
 
     @Column({
-        type: "int",
+        type: "bigint",
         default: -1
     })
     calculatedNextRun = 0;

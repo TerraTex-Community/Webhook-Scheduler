@@ -1,6 +1,7 @@
 import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 import {CreateUpdateBaseEntity} from "../baseEntities/CreateUpdateBaseEntity";
 import {Job} from "./Job";
+import {SensitiveInfo} from "../decorator/SensitiveInfo";
 
 @Entity()
 export class Application extends CreateUpdateBaseEntity {
@@ -32,6 +33,7 @@ export class Application extends CreateUpdateBaseEntity {
     /**
      * Unique Key - default Unique Key Format
      */
+    @SensitiveInfo
     @Column({
         type: "varchar",
         length: 50,
@@ -46,6 +48,7 @@ export class Application extends CreateUpdateBaseEntity {
         type: "varchar",
         length: 256
     })
+    @SensitiveInfo
     authSecret: string;
 
     /**
@@ -55,6 +58,7 @@ export class Application extends CreateUpdateBaseEntity {
         type: "varchar",
         length: 256
     })
+    @SensitiveInfo
     applicationSecurityToken: string;
 
     /**
