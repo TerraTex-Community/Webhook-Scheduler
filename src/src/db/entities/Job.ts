@@ -25,7 +25,20 @@ export class Job extends CreateUpdateBaseEntity {
     taskKey: string;
 
     @Column({
-        type: "json"
+        type: "varchar",
+        length: 64
+    })
+    cronExpression: string;
+
+    @Column({
+        type: "smallint",
+        default: 3
+    })
+    maxRetries: number = 3;
+
+    @Column({
+        type: "json",
+        default: {}
     })
     payload: any;
 
@@ -40,6 +53,17 @@ export class Job extends CreateUpdateBaseEntity {
         default: 0
     })
     lastFailedCount: number = 0;
+
+    @Column({
+        default: 0
+    })
+    lastRetries: number = 0;
+
+    @Column({
+        type: "int",
+        default: -1
+    })
+    calculatedNextRun = 0;
 
     @Column({
         type: "enum",

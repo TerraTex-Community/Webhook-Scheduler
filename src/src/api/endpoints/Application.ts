@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { Application } from '../../db/entities/Application';
 import {mwHasSystemPrivilege} from "../../services/Authentication";
+import {ErrorResponse} from "../utils/DefaultResponses";
 
 // Define the shape of the body for POST and PUT requests
 interface PostRequestBody {
@@ -24,9 +25,6 @@ interface GetQuery {
     id: string;
 }
 
-interface ErrorResponse {
-    message: string;
-}
 
 // Fetch application using ID and handle failure case
 async function findApplicationOrThrowError(id: unknown, res: Response<Application | ErrorResponse>) {

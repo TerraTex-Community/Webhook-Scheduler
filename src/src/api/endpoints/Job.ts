@@ -2,18 +2,25 @@
 import express, { Request, Response } from 'express';
 import { Job, JobExecutionType } from '../../db/entities/Job';
 import { Application } from '../../db/entities/Application';
+import { v4 as uuidv4 } from 'uuid';
 import {
     getApplicationIdFromJwt,
-    mwHasSystemPrivilege,
     mwIsJwtValid,
     sameApplicationIdSystemPrivilegeOr403
 } from "../../services/Authentication";
+import {isUUID} from "validator";
+import {CronExpression, parseExpression} from "cron-parser";
+import {ErrorResponse} from "../utils/DefaultResponses";
 
 // Interfaces used for strict typing of request bodies and parameters
 interface PostPutRequestBody {
-    taskKey?: string;
+    taskKey?: string; // needs to be generated on POST
+    cronExpression?: string; // required on POST
+    maxRetries?: number;
     payload?: any;
     jobExecutionType?: keyof typeof JobExecutionType;
+    // only internal
+    calculatedNextRun?: number;
 }
 
 interface GetQuery {
@@ -40,17 +47,17 @@ router.use(mwIsJwtValid);
  * @param {Response<Job | string>} res - The response object
  * @returns {Promise<Job | undefined>} - Returns the job if found or undefined
  */
-async function getJobOr404(id: number, res: Response<Job | string>): Promise<Job | undefined> {
+async function getJobOr404(id: number, res: Response<Job | ErrorResponse>): Promise<Job | undefined> {
     const job = await Job.findOne({where: {id}});
     if (!job) {
-        res.status(404).send('Job not found');
+        res.status(404).send({message: 'Job not found'});
         return;
     }
     return job;
 }
 
 // Get job by id endpoint
-router.get('/:id', async (req: Request<GetQuery, Job | string>, res: Response<Job | string>) => {
+router.get('/:id', async (req: Request<GetQuery, Job | ErrorResponse>, res: Response<Job | ErrorResponse>) => {
     const job = await getJobOr404(Number(req.params.id), res);
     if(job) {
         if (!await sameApplicationIdSystemPrivilegeOr403(job.application.id, req, res)) {
@@ -63,53 +70,53 @@ router.get('/:id', async (req: Request<GetQuery, Job | string>, res: Response<Jo
 
 
 // Post (or create) new job endpoint
-router.post('/', async (req: Request<undefined, Job | string, PostPutRequestBody>, res: Response<Job | string>) => {
+router.post('/', async (req: Request<undefined, Job | ErrorResponse, PostPutRequestBody>, res: Response<Job | ErrorResponse>) => {
     const applicationId = getApplicationIdFromJwt(req);
     const application = await Application.findOne({where: {id: applicationId}});
-
-    if (application && req.body.jobExecutionType && isValidJobExecutionType(req.body.jobExecutionType)) {
-        const jobExecutionType = JobExecutionType[req.body.jobExecutionType];
-        const job = Job.create({
-            ...req.body,
-            lastExecution: null,
-            lastFailedCount: 0,
-            jobExecutionType,
-            application
-        });
-
-        await job.save();
-        return res.send(job);
+    let verifiedBody: Partial<PostPutRequestBody>;
+    try {
+        verifiedBody = verifyBody(req.body, false);
+    } catch (e) {
+        return res.status(400).send({message: e.message})
     }
 
-    return res.status(400).send('Invalid request');
+    const job = Job.create({
+        taskKey: verifiedBody.taskKey,
+        cronExpression: verifiedBody.cronExpression,
+        maxRetries: verifiedBody.maxRetries,
+        payload: verifiedBody.payload,
+        jobExecutionType: verifiedBody.jobExecutionType as JobExecutionType | undefined,
+        calculatedNextRun: verifiedBody.calculatedNextRun
+    });
+
+    await job.save();
+    return res.send(job);
 });
 
-// UpdateData type
-type UpdateData = Partial<{[K in keyof PostPutRequestBody]: K extends 'jobExecutionType' ? JobExecutionType : PostPutRequestBody[K]}>;
 
 // Update job endpoint
-router.put('/:id', async (req: Request<GetQuery, Job | string, PostPutRequestBody>, res: Response<Job | string>) => {
+router.put('/:id', async (req: Request<GetQuery, Job | ErrorResponse, PostPutRequestBody>, res: Response<Job | ErrorResponse>) => {
     const job = await getJobOr404(Number(req.params.id), res);
-    if(job && (req.body.jobExecutionType === undefined || isValidJobExecutionType(req.body.jobExecutionType))) {
-        if (!await sameApplicationIdSystemPrivilegeOr403(job.application.id, req, res)) {
-            return;
-        }
 
-        const {taskKey, payload} = req.body;
-        const updateData: UpdateData = {taskKey, payload, jobExecutionType: undefined};
-        if(req.body.jobExecutionType !== undefined) {
-            updateData.jobExecutionType = JobExecutionType[req.body.jobExecutionType];
-        }
-        Object.assign(job, updateData);
-        await job.save();
-        res.send(job);
-    } else {
-        res.status(400).send('Invalid request');
+    if (!job || !await sameApplicationIdSystemPrivilegeOr403(job.application.id, req, res)) {
+        res.status(404).send({message: 'Job not found'});
+        return;
     }
+
+    let verifiedBody: Partial<PostPutRequestBody>;
+    try {
+        verifiedBody = verifyBody(req.body, false);
+    } catch (e) {
+        return res.status(400).send({message: e.message})
+    }
+
+    Object.assign(job, verifiedBody);
+    await job.save();
+    res.send(job);
 });
 
 // Delete job endpoint
-router.delete('/:id', async (req: Request<GetQuery, string>, res: Response<string>) => {
+router.delete('/:id', async (req: Request<GetQuery, ErrorResponse>, res: Response<ErrorResponse>) => {
     const job = await getJobOr404(Number(req.params.id), res);
     if(job) {
         if (!await sameApplicationIdSystemPrivilegeOr403(job.application.id, req, res)) {
@@ -117,10 +124,86 @@ router.delete('/:id', async (req: Request<GetQuery, string>, res: Response<strin
         }
 
         await job.remove();
-        res.send(`Job ${req.params.id} deleted`);
+        res.send({message: `Job ${req.params.id} deleted`});
     } else {
-        res.status(400).send('Invalid request');
+        res.status(400).send({message: 'Invalid request'});
     }
 });
+
+/**
+ *
+ * @param body
+ * @param isUpdate
+ *
+ * @throws Error on Validation failed
+ */
+function verifyBody(body: PostPutRequestBody, isUpdate = false): Partial<PostPutRequestBody> {
+    const verifiedBody: Partial<PostPutRequestBody> = {};
+    if (!isUpdate) {
+        if (!body.cronExpression) {
+           throw new ValidationError('cronExpression is required');
+        }
+        if (!body.taskKey) {
+           verifiedBody.taskKey = uuidv4();
+        }
+    }
+
+    if (body.cronExpression) {
+        let parsedExpression: CronExpression;
+        try {
+            parsedExpression = parseExpression(body.cronExpression, {
+                tz: "Europe/Berlin",
+                currentDate: new Date()
+            });
+        } catch (e) {
+            throw new ValidationError('cronExpression is not a valid or supported cron expression');
+        }
+
+        if (!parsedExpression.hasNext()) {
+            throw new ValidationError('cronExpression is not valid as it is its execution is in past');
+        }
+
+        const next = parsedExpression.next().getDate();
+        const nextNext = parsedExpression.next().getDate();
+        if (nextNext - next < 180000) {
+            throw new ValidationError("cronExpress is not valid: Intervals/Repeating Cron Expressions should have longer Intervals than 3 Minutes");
+        }
+
+        verifiedBody.cronExpression = body.cronExpression;
+        verifiedBody.calculatedNextRun = next;
+    }
+
+    if (body.maxRetries !== undefined) {
+        // isNumber?
+        if (isNaN(body.maxRetries)) {
+            throw new ValidationError('maxRetries has to be a number');
+        }
+        verifiedBody.maxRetries = body.maxRetries;
+    }
+
+    if (body.payload) verifiedBody.payload = body.payload;
+    if (body.taskKey) {
+        if (!isUUID(body.taskKey)) {
+            throw new ValidationError("taskKey has to be a UUID");
+        }
+        verifiedBody.taskKey = body.taskKey;
+    }
+
+    if (body.jobExecutionType) {
+        if (!isValidJobExecutionType(body.jobExecutionType)) {
+            const validTypes = Object.keys(JobExecutionType).filter((item) => {
+                return isNaN(Number(item));
+            });
+
+            throw new ValidationError(`jobExecutionType has to be one of: ${validTypes.join(",")}`);
+        }
+
+        verifiedBody.jobExecutionType = JobExecutionType[body.jobExecutionType as string];
+    }
+
+    return verifiedBody;
+}
+
+class ValidationError extends Error {}
 
 export default router;

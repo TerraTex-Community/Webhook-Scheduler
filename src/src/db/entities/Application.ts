@@ -14,8 +14,6 @@ export class Application extends CreateUpdateBaseEntity {
 
     /**
      * Represents the name of Application or an description to Identify Applications in Database.
-     *
-     * @typedef {string} Name
      */
     @Column({
         type: "text"
@@ -43,7 +41,6 @@ export class Application extends CreateUpdateBaseEntity {
 
     /**
      * Secrets should be encrypted / hashed
-     * @todo: create Hash Func for secrets
      */
     @Column({
         type: "varchar",
@@ -53,7 +50,6 @@ export class Application extends CreateUpdateBaseEntity {
 
     /**
      * Token that is send as Bearer or as Token field in Webhook/Queue
-     * @todo: should be encrypted and should be able to decrypt
      */
     @Column({
         type: "varchar",
