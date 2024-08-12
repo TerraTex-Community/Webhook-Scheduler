@@ -106,4 +106,8 @@ dist
 .tern-port
 .env.prod
 
-.idea
+.idea!/src/certs/prod
+
+!/src/certs/prod.pem
+
+!/src/certs/prod.ppk
