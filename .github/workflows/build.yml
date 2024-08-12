@@ -41,9 +41,9 @@ jobs:
         working-directory: src
         run: |
           echo "${{ secrets.dot_env }}" >> .env
-          echo "${{ secrets.cert_prod }}" >> src/certs/prod
-          echo "${{ secrets.cert_prod_pem }}" >> src/certs/prod.pem
-          echo "${{ secrets.cert_prod_ppk }}" >> src/certs/prod.ppk
+          echo "${{ secrets.cert_prod }}" >> certs/prod
+          echo "${{ secrets.cert_prod_pem }}" >> certs/prod.pem
+          echo "${{ secrets.cert_prod_ppk }}" >> certs/prod.ppk
 
 
       - name: Log in to the Container registry
