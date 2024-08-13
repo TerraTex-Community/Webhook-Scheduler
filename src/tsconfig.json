@@ -14,7 +14,7 @@
     ],
     "module": "commonjs",
 //    "module": "None",
-    "target": "es2016",
+    "target": "es2018",
     "esModuleInterop": true,
     "baseUrl": ".",
     "skipLibCheck": true,
