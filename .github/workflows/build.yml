@@ -30,10 +30,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build Yarn
-        uses: actions/setup-node@v3.7.0
+        uses: actions/setup-node@v4.0.3
         with:
           node-version: 20.9.0
 
@@ -55,7 +55,7 @@ jobs:
 
       - id: keydb
         name: Get Latest Release
-        uses: pozetroninc/github-action-get-latest-release@v0.7.0
+        uses: pozetroninc/github-action-get-latest-release@v0.8.0
         with:
           repository: ${{ github.repository }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -79,7 +79,7 @@ jobs:
 
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./src
           push: true
@@ -87,7 +87,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Set up Kubectl
-        uses: azure/k8s-set-context@v1
+        uses: azure/k8s-set-context@v4
         with:
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
