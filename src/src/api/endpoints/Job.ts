@@ -1,5 +1,6 @@
 // Import necessary modules from their relative paths
 import express, { Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { Job, JobExecutionType } from '../../db/entities/Job';
 import { Application } from '../../db/entities/Application';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,6 +31,15 @@ interface GetQuery {
 
 // Initialize new router instance
 const router = express.Router();
+
+// Configure rate limiter: maximum of 100 requests per 15 minutes
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+});
+
+// Apply rate limiter to all job-related endpoints
+router.use(limiter);
 
 /**
  * Utility function to validate the job execution type.
