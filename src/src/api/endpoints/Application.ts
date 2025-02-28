@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { Application } from '../../db/entities/Application';
 import {mwHasSystemPrivilege} from "../../services/Authentication";
 import {ErrorResponse} from "../utils/DefaultResponses";
+import {logger} from "../../logger";
 
 // Define the shape of the body for POST and PUT requests
 interface PostRequestBody {
