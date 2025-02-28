@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { Application } from '../../db/entities/Application';
 import {mwHasSystemPrivilege} from "../../services/Authentication";
 import {ErrorResponse} from "../utils/DefaultResponses";
+import {logger} from "../../logger";
 
 // Define the shape of the body for POST and PUT requests
 interface PostRequestBody {
@@ -46,7 +47,8 @@ async function findApplicationOrThrowError(id: unknown, res: Response<Applicatio
             return null;
         }
     } catch (e) {
-        res.status(500).send(e);
+        logger.error("Exception occurred:", e);
+        res.status(500).send({ message: 'An internal server error occurred' });
         return null;
     }
 }
