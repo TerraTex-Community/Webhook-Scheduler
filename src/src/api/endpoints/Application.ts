@@ -46,7 +46,7 @@ async function findApplicationOrThrowError(id: unknown, res: Response<Applicatio
             return null;
         }
     } catch (e) {
-        console.error("Exception occurred:", e);
+        logger.error("Exception occurred:", e);
         res.status(500).send({ message: 'An internal server error occurred' });
         return null;
     }
